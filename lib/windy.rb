@@ -6,6 +6,15 @@ module Windy
 
   class << self
     attr_accessor :app_token, :debug
+
+    def root_url=(root_url)
+      @views = nil
+      @root_url = root_url
+    end
+
+    def root_url
+      @root_url ||= "http://data.cityofchicago.org"
+    end
   end
 
   module Response
@@ -28,14 +37,10 @@ module Windy
   end
 
   class Base
-    def self.root
-      "http://data.cityofchicago.org"
-    end
-
     attr_reader :connection
 
     def initialize
-      @connection = Faraday.new(:url => self.class.root) do |builder|
+      @connection = Faraday.new(:url => Windy.root_url) do |builder|
         builder.use SocrataAppTokenMiddleware
         builder.use Windy::Response::RaiseClientError
         builder.request :json
@@ -67,7 +72,7 @@ module Windy
     end
 
     def inspect
-      "#<#{self.class.name} #{self.class.root}#{path}>"
+      "#<#{self.class.name} #{Windy.root_url}#{path}>"
     end
   end
 
